@@ -1,50 +1,59 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Updated import
+import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 
-const SignUp = () => {
+const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Updated hook
 
-  const handleSignUp = async (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
     try {
-      await auth.createUserWithEmailAndPassword(email, password);
-      navigate('/'); // Updated method for navigation
+      await auth.signInWithEmailAndPassword(email, password);
+      navigate('/'); // Redirect to home or desired route upon successful sign in
     } catch (err) {
-      setError('Failed to create an account. Please try again.');
+      setError('Invalid email or password. Please try again.');
     }
   };
 
   return (
-    <div>
-      <h2>Sign Up</h2>
-      <form onSubmit={handleSignUp}>
-        <label>
-          Email:
+    <div className="container mt-5">
+      <h2 className="mb-4">Sign In</h2>
+      <form onSubmit={handleSignIn}>
+        <div className="mb-3">
+          <label htmlFor="email" className="form-label">Email:</label>
           <input
+            id="email"
             type="email"
+            className="form-control"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
-        </label>
-        <br />
-        <label>
-          Password:
+        </div>
+        <div className="mb-3">
+          <label htmlFor="password" className="form-label">Password:</label>
           <input
+            id="password"
             type="password"
+            className="form-control"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
-        </label>
-        <br />
-        <button type="submit">Sign Up</button>
-        {error && <p>{error}</p>}
+        </div>
+        <button type="submit" className="btn btn-primary">Sign In</button>
       </form>
+      {error && (
+        <div className="alert alert-danger mt-3" role="alert">
+          {error}
+        </div>
+      )}
     </div>
   );
 };
 
-export default SignUp;
+export default SignIn;

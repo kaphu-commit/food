@@ -1,8 +1,8 @@
 import React from 'react';
-import { Route, Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { auth } from '../firebase';
 
-const PrivateRoute = ({ element: Component, ...rest }) => {
+const PrivateRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
   React.useEffect(() => {
@@ -12,7 +12,7 @@ const PrivateRoute = ({ element: Component, ...rest }) => {
     return () => unsubscribe();
   }, []);
 
-  return isAuthenticated ? Component : <Navigate to="/login" />;
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
 };
 
 export default PrivateRoute;

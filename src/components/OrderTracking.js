@@ -1,14 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { firestore } from '../firebase';
+import { firestore } from '../firebase'; // Ensure this exports the Firestore instance
+import { doc, getDoc } from 'firebase/firestore'; // Import Firestore functions
 
 const OrderTracking = ({ orderId }) => {
   const [order, setOrder] = useState(null);
 
   useEffect(() => {
     const fetchOrder = async () => {
-      const doc = await firestore.collection('orders').doc(orderId).get();
-      if (doc.exists) {
-        setOrder(doc.data());
+      // Create a reference to the order document
+      const orderDocRef = doc(firestore, 'orders', orderId);
+      
+      try {
+        // Fetch the document
+        const docSnap = await getDoc(orderDocRef);
+        
+        if (docSnap.exists()) {
+          setOrder(docSnap.data());
+        } else {
+          console.log('No such document!');
+        }
+      } catch (error) {
+        console.error('Error fetching order:', error);
       }
     };
 

@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { firestore } from '../firebase';
+import { firestore, doc, getDoc } from '../firebase'; // Ensure the path is correct
 
 const DynamicPricing = ({ productId }) => {
   const [price, setPrice] = useState(0);
 
   useEffect(() => {
     const fetchProductPrice = async () => {
-      const doc = await firestore.collection('products').doc(productId).get();
-      if (doc.exists) {
-        const productData = doc.data();
-        const currentPrice = productData.basePrice * (1 + productData.demandFactor);
-        setPrice(currentPrice);
+      try {
+        const productDocRef = doc(firestore, 'products', productId);
+        const productDoc = await getDoc(productDocRef);
+
+        if (productDoc.exists()) {
+          const productData = productDoc.data();
+          const currentPrice = productData.basePrice * (1 + productData.demandFactor);
+          setPrice(currentPrice);
+        } else {
+          console.error('No such document!');
+        }
+      } catch (error) {
+        console.error('Error fetching product price:', error);
       }
     };
 
