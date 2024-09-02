@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
-import { auth } from '../firebase';
-import { useNavigate } from 'react-router-dom'; // Updated import
-import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap CSS is imported
+import { auth } from '../firebase'; // Ensure this is correctly pointing to your firebase.js file
+import { signInWithEmailAndPassword } from 'firebase/auth'; // Correct import
+import { useNavigate } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // Updated hook
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading state to true
+    setLoading(true);
 
     try {
-      await auth.signInWithEmailAndPassword(email, password);
+      // Use signInWithEmailAndPassword correctly with the auth instance
+      await signInWithEmailAndPassword(auth, email, password);
       navigate('/'); // Redirect to home or desired route upon successful login
     } catch (err) {
       // Handle specific Firebase error codes

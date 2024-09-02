@@ -13,7 +13,7 @@ const Checkout = () => {
     setLoading(true);
     setError('');
     setSuccess('');
-    
+
     const user = auth.currentUser;
     if (user) {
       try {
@@ -21,13 +21,17 @@ const Checkout = () => {
         const cartItems = cartSnapshot.data().items || [];
         const order = {
           userId: user.uid,
+          email: user.email, // Add user's email
           deliveryAddress: address,
           paymentMethod,
           products: cartItems,
           status: 'Pending'
         };
+
+        // Add order to 'orders' collection
         await firestore.collection('orders').add(order);
-        // Clear cart
+
+        // Clear the cart
         await firestore.collection('carts').doc(user.uid).update({ items: [] });
 
         setSuccess('Order placed successfully!');

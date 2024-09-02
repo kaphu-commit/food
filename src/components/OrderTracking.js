@@ -1,42 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { firestore } from '../firebase'; // Ensure this exports the Firestore instance
-import { doc, getDoc } from 'firebase/firestore'; // Import Firestore functions
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-const OrderTracking = ({ orderId }) => {
-  const [order, setOrder] = useState(null);
+const OrderTracking = () => {
+  const { orderId } = useParams(); // Get the orderId from URL
+  const [orderData, setOrderData] = useState(null);
 
   useEffect(() => {
-    const fetchOrder = async () => {
-      // Create a reference to the order document
-      const orderDocRef = doc(firestore, 'orders', orderId);
-      
+    const fetchOrderData = async () => {
       try {
-        // Fetch the document
-        const docSnap = await getDoc(orderDocRef);
-        
-        if (docSnap.exists()) {
-          setOrder(docSnap.data());
-        } else {
-          console.log('No such document!');
+        const response = await fetch(`/api/orders/${orderId}`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
         }
+        const data = await response.json();
+        setOrderData(data);
       } catch (error) {
-        console.error('Error fetching order:', error);
+        console.error('Error fetching order data:', error);
       }
     };
 
-    fetchOrder();
+    fetchOrderData();
   }, [orderId]);
 
-  if (!order) {
-    return <p>Loading...</p>;
-  }
+  if (!orderData) return <p>Loading...</p>;
 
   return (
     <div>
       <h2>Order Tracking</h2>
-      <p>Order ID: {orderId}</p>
-      <p>Status: {order.status}</p>
-      <p>Delivery Address: {order.deliveryAddress}</p>
+      <p>Order ID: {orderData.id}</p>
+      <p>Status: {orderData.status}</p>
+      {/* Render other order details */}
     </div>
   );
 };

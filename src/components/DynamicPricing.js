@@ -1,33 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { firestore, doc, getDoc } from '../firebase'; // Ensure the path is correct
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-const DynamicPricing = ({ productId }) => {
-  const [price, setPrice] = useState(0);
+const DynamicPricing = () => {
+  const { productId } = useParams(); // Get the productId from URL
+  const [pricingData, setPricingData] = useState(null);
 
   useEffect(() => {
-    const fetchProductPrice = async () => {
+    const fetchPricingData = async () => {
       try {
-        const productDocRef = doc(firestore, 'products', productId);
-        const productDoc = await getDoc(productDocRef);
-
-        if (productDoc.exists()) {
-          const productData = productDoc.data();
-          const currentPrice = productData.basePrice * (1 + productData.demandFactor);
-          setPrice(currentPrice);
-        } else {
-          console.error('No such document!');
+        const response = await fetch(`/api/products/${productId}/pricing`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
         }
+        const data = await response.json();
+        setPricingData(data);
       } catch (error) {
-        console.error('Error fetching product price:', error);
+        console.error('Error fetching pricing data:', error);
       }
     };
 
-    fetchProductPrice();
+    fetchPricingData();
   }, [productId]);
+
+  if (!pricingData) return <p>Loading...</p>;
 
   return (
     <div>
-      <h2>Price: ${price.toFixed(2)}</h2>
+      <h2>Dynamic Pricing</h2>
+      <p>Product ID: {pricingData.id}</p>
+      <p>Price: ${pricingData.price}</p>
+      {/* Render other pricing details */}
     </div>
   );
 };

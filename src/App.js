@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
-import 'bootstrap/dist/js/bootstrap.bundle.min'; // Import Bootstrap JS and Popper.js
-import { FaFacebookF, FaTwitter, FaInstagram } from 'react-icons/fa'; // Font Awesome Icons
+import 'bootstrap/dist/css/bootstrap.min.css'; 
+import 'bootstrap/dist/js/bootstrap.bundle.min'; 
 
 // Import components
 import Login from './components/Login';
 import SignUp from './components/SignUp';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
-import DeliveryMap from './components/DeliveryMap';
+import DeliveryMapPage from './components/DeliveryMapPage'; 
 import DiscountCode from './components/DiscountCode';
 import GeoLocation from './components/GeoLocation';
 import LiveChat from './components/LiveChat';
@@ -19,9 +18,12 @@ import OrderHistory from './components/OrderHistory';
 import OrderTracking from './components/OrderTracking';
 import PersonalizedRecommendations from './components/PersonalizedRecommendations';
 import DynamicPricing from './components/DynamicPricing';
+import ProductPage from './components/ProductPage'; 
+import HomePage from './components/HomePage';
+import Logout from './components/Logout'; // Import the Logout component
 
 const App = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -46,6 +48,9 @@ const App = () => {
             <ul className="nav flex-column">
               <li className="nav-item">
                 <Link className="nav-link menu-link" to="/">Home</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link menu-link" to="/product-page">Product Page</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link menu-link" to="/login">Login</Link>
@@ -81,13 +86,17 @@ const App = () => {
                 <Link className="nav-link menu-link" to="/order-history">Order History</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link menu-link" to="/order-tracking">Order Tracking</Link>
+                <Link className="nav-link menu-link" to="/order-tracking/12345">Order Tracking</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link menu-link" to="/personalized-recommendations">Personalized Recommendations</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link menu-link" to="/dynamic-pricing">Dynamic Pricing</Link>
+                <Link className="nav-link menu-link" to="/dynamic-pricing/product1">Dynamic Pricing</Link>
+              </li>
+              {/* Add Logout button */}
+              <li className="nav-item">
+                <Logout /> {/* Logout button */}
               </li>
             </ul>
           </div>
@@ -95,59 +104,27 @@ const App = () => {
 
         {/* Main Content */}
         <main className="container mt-4">
-          <h1 className="text-center mb-4">Welcome to the Food Delivery App!</h1>
           <Routes>
+            <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/delivery-map" element={<DeliveryMap location={{ lat: 51.505, lng: -0.09 }} />} />
+            <Route path="/delivery-map" element={<DeliveryMapPage />} />
             <Route path="/discount-code" element={<DiscountCode />} />
             <Route path="/geo-location" element={<GeoLocation />} />
             <Route path="/live-chat" element={<LiveChat />} />
             <Route path="/loyalty-rewards" element={<LoyaltyRewards />} />
             <Route path="/order-customization" element={<OrderCustomization />} />
             <Route path="/order-history" element={<OrderHistory />} />
-            <Route path="/order-tracking" element={<OrderTracking orderId="12345" />} />
+            <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
             <Route path="/personalized-recommendations" element={<PersonalizedRecommendations />} />
-            <Route path="/dynamic-pricing" element={<DynamicPricing productId="product1" />} />
-            <Route path="/" element={
-              <div className="text-center">
-                <p>Explore our services and enjoy your meal.</p>
-                <p>Use the navigation bar to visit different pages.</p>
-              </div>
-            } />
+            <Route path="/dynamic-pricing/:productId" element={<DynamicPricing />} />
+            <Route path="/product-page" element={<ProductPage />} />
             <Route path="*" element={<div className="text-center"><h2>404 - Page Not Found</h2></div>} />
           </Routes>
         </main>
-
-        {/* Footer */}
-        <footer className="bg-primary text-white py-4 mt-5">
-          <div className="container">
-            <div className="row">
-              <div className="col-md-6">
-                <h5 className="text-center text-md-start mb-4 mb-md-0">Contact Us</h5>
-                <p><strong>Email:</strong> <a href="mailto:info@example.com" className="text-white text-decoration-none">kap@.com</a></p>
-                <p><strong>Phone:</strong> <a href="tel:+1234567890" className="text-white text-decoration-none">+1-234-567-890</a></p>
-              </div>
-              <div className="col-md-6">
-                <h5 className="text-center text-md-end mb-4 mb-md-0">Follow Us</h5>
-                <div className="d-flex justify-content-center justify-content-md-end">
-                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white me-3">
-                    <FaFacebookF size={30} />
-                  </a>
-                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white me-3">
-                    <FaTwitter size={30} />
-                  </a>
-                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white">
-                    <FaInstagram size={30} />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </footer>
-
+        
         {/* Custom Styles */}
         <style jsx>{`
           .sidebar-menu {
@@ -160,6 +137,7 @@ const App = () => {
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             z-index: 1000;
             padding: 15px;
+            overflow-y: auto; /* Enable vertical scrolling */
             transition: transform 0.3s ease;
           }
           
