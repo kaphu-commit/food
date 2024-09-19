@@ -30,6 +30,7 @@ const SignUp = () => {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -41,12 +42,15 @@ const SignUp = () => {
     }
 
     try {
-      // Ensure the function is called with correct arguments
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate('/');
+      navigate('/'); // Navigate to the home page or another page after successful sign-up
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
         setError('Email is already in use. Please sign in or use another email.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Invalid email address. Please check and try again.');
+      } else if (err.code === 'auth/weak-password') {
+        setError('Password is too weak. Please choose a stronger password.');
       } else {
         setError(`Failed to create account: ${err.message}`);
       }

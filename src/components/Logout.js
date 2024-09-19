@@ -1,8 +1,8 @@
 // src/components/Logout.js
 import React from 'react';
-import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../firebase'; // Adjust the path according to your setup
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 
 const Logout = () => {
   const navigate = useNavigate();
@@ -10,14 +10,14 @@ const Logout = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigate('/login'); // Redirect to login or desired route upon successful logout
-    } catch (err) {
-      console.error('Error signing out:', err);
+      navigate('/login'); // Redirect to login page after logout
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
 
   return (
-    <button onClick={handleLogout} className="btn btn-danger">
+    <button className="btn btn-danger" onClick={handleLogout}>
       Logout
     </button>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'; 
 import 'bootstrap/dist/js/bootstrap.bundle.min'; 
@@ -20,14 +20,28 @@ import PersonalizedRecommendations from './components/PersonalizedRecommendation
 import DynamicPricing from './components/DynamicPricing';
 import ProductPage from './components/ProductPage'; 
 import HomePage from './components/HomePage';
-import Logout from './components/Logout'; // Import the Logout component
+import Logout from './components/Logout'; 
+import AuthHandler from './components/AuthHandler'; // Import AuthHandler
 
 const App = () => {
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const menuRef = useRef(null);
 
   const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
+    setMenuOpen(prevState => !prevState);
   };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuOpen && menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   return (
     <Router>
@@ -42,65 +56,29 @@ const App = () => {
           </div>
         </nav>
 
-        {/* Conditional Menu */}
-        {menuOpen && (
-          <div className="sidebar-menu">
-            <ul className="nav flex-column">
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/">Home</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/product-page">Product Page</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/login">Login</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/signup">Sign Up</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/cart">Cart</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/checkout">Checkout</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/delivery-map">Delivery Map</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/discount-code">Discount Code</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/geo-location">Geo Location</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/live-chat">Live Chat</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/loyalty-rewards">Loyalty Rewards</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/order-customization">Order Customization</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/order-history">Order History</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/order-tracking/12345">Order Tracking</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/personalized-recommendations">Personalized Recommendations</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link menu-link" to="/dynamic-pricing/product1">Dynamic Pricing</Link>
-              </li>
-              {/* Add Logout button */}
-              <li className="nav-item">
-                <Logout /> {/* Logout button */}
-              </li>
-            </ul>
-          </div>
-        )}
+        {/* Sidebar Menu */}
+        <div className={`sidebar-menu ${menuOpen ? 'open' : ''}`} ref={menuRef}>
+          <button className="btn btn-secondary close-btn" onClick={toggleMenu}>X</button>
+          <ul className="nav flex-column">
+            <li className="nav-item"><Link className="nav-link menu-link" to="/">Home</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/product-page">Product Page</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/login">Login</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/signup">Sign Up</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/cart">Cart</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/checkout">Checkout</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/delivery-map">Delivery Map</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/discount-code">Discount Code</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/geo-location">Geo Location</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/live-chat">Live Chat</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/loyalty-rewards">Loyalty Rewards</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/order-customization">Order Customization</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/order-history">Order History</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/order-tracking/12345">Order Tracking</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/personalized-recommendations">Personalized Recommendations</Link></li>
+            <li className="nav-item"><Link className="nav-link menu-link" to="/dynamic-pricing/product1">Dynamic Pricing</Link></li>
+            <li className="nav-item"><Logout /></li>
+          </ul>
+        </div>
 
         {/* Main Content */}
         <main className="container mt-4">
@@ -108,23 +86,29 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/delivery-map" element={<DeliveryMapPage />} />
-            <Route path="/discount-code" element={<DiscountCode />} />
-            <Route path="/geo-location" element={<GeoLocation />} />
-            <Route path="/live-chat" element={<LiveChat />} />
-            <Route path="/loyalty-rewards" element={<LoyaltyRewards />} />
-            <Route path="/order-customization" element={<OrderCustomization />} />
-            <Route path="/order-history" element={<OrderHistory />} />
-            <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
-            <Route path="/personalized-recommendations" element={<PersonalizedRecommendations />} />
-            <Route path="/dynamic-pricing/:productId" element={<DynamicPricing />} />
             <Route path="/product-page" element={<ProductPage />} />
+            
+            {/* Protected Routes */}
+            <Route element={<AuthHandler />}>
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/delivery-map" element={<DeliveryMapPage />} />
+              <Route path="/discount-code" element={<DiscountCode />} />
+              <Route path="/geo-location" element={<GeoLocation />} />
+              <Route path="/live-chat" element={<LiveChat />} />
+              <Route path="/loyalty-rewards" element={<LoyaltyRewards />} />
+              <Route path="/order-customization" element={<OrderCustomization />} />
+              <Route path="/order-history" element={<OrderHistory />} />
+              <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
+              <Route path="/personalized-recommendations" element={<PersonalizedRecommendations />} />
+              <Route path="/dynamic-pricing/:productId" element={<DynamicPricing />} />
+            </Route>
+
+            {/* Catch-All for 404 */}
             <Route path="*" element={<div className="text-center"><h2>404 - Page Not Found</h2></div>} />
           </Routes>
         </main>
-        
+
         {/* Custom Styles */}
         <style jsx>{`
           .sidebar-menu {
@@ -133,39 +117,65 @@ const App = () => {
             left: 0;
             width: 250px;
             height: 100%;
-            background-color: #f8f9fa; /* Menu background color */
+            background-color: #f8f9fa;
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             z-index: 1000;
             padding: 15px;
-            overflow-y: auto; /* Enable vertical scrolling */
+            overflow-y: auto;
+            transform: translateX(-100%);
             transition: transform 0.3s ease;
           }
-          
+
+          .sidebar-menu.open {
+            transform: translateX(0);
+          }
+
+          .sidebar-menu .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            border: none;
+            background: #007bff;
+            color: #fff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 18px;
+            text-align: center;
+            line-height: 30px;
+            cursor: pointer;
+          }
+
           .sidebar-menu ul {
             list-style: none;
             padding: 0;
           }
 
           .nav-link {
-            color: #333; /* Default link color */
+            color: #333;
             text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
           }
 
           .nav-link:hover {
-            color: #007bff; /* Link color on hover */
-          }
-
-          .sidebar-menu {
-            transform: translateX(${menuOpen ? '0' : '-100%'});
+            color: #fff;
+            background-color: #007bff;
           }
 
           .btn-primary {
-            background-color: #007bff; /* Button background color */
+            background-color: #007bff;
             border: none;
           }
 
           .btn-primary:hover {
-            background-color: #0056b3; /* Button background color on hover */
+            background-color: #0056b3;
+          }
+
+          @media (max-width: 768px) {
+            .sidebar-menu {
+              width: 100%;
+            }
           }
         `}</style>
       </div>

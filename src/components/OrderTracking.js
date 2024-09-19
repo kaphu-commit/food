@@ -1,37 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { firestore, auth, collection, query, where, getDocs } from '../firebase';
 
-const OrderTracking = () => {
-  const { orderId } = useParams(); // Get the orderId from URL
-  const [orderData, setOrderData] = useState(null);
+const OrderHistory = () => {
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    const fetchOrderData = async () => {
-      try {
-        const response = await fetch(`/api/orders/${orderId}`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+    const fetchOrders = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const ordersRef = collection(firestore, 'orders');
+          const q = query(ordersRef, where('userId', '==', user.uid));
+          const snapshot = await getDocs(q);
+          const ordersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setOrders(ordersList);
+        } catch (error) {
+          console.error('Error fetching orders:', error);
         }
-        const data = await response.json();
-        setOrderData(data);
-      } catch (error) {
-        console.error('Error fetching order data:', error);
       }
     };
 
-    fetchOrderData();
-  }, [orderId]);
-
-  if (!orderData) return <p>Loading...</p>;
+    fetchOrders();
+  }, []);
 
   return (
-    <div>
-      <h2>Order Tracking</h2>
-      <p>Order ID: {orderData.id}</p>
-      <p>Status: {orderData.status}</p>
-      {/* Render other order details */}
+    <div className="container mt-4">
+      <h2>Order History</h2>
+      <ul className="list-group">
+        {orders.map(order => (
+          <li key={order.id} className="list-group-item">
+            <h5>Order ID: {order.id}</h5>
+            <p>Status: {order.status}</p>
+            <p>Total: ${order.products.reduce((acc, product) => acc + product.price * product.quantity, 0).toFixed(2)}</p>
+            <p>Delivery Address: {order.deliveryAddress}</p>
+            <p>Payment Method: {order.paymentMethod}</p>
+            <p>Email: {order.email}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-export default OrderTracking;
+export default OrderHistory;

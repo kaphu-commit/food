@@ -91,8 +91,8 @@ const Cart = () => {
       try {
         const order = {
           userId: user.uid,
-          deliveryAddress: '',
-          paymentMethod: 'credit_card',
+          deliveryAddress: '', // Address to be set in checkout
+          paymentMethod: 'credit_card', // Default or set in checkout
           products: [item],
           status: 'Pending'
         };
@@ -102,7 +102,8 @@ const Cart = () => {
         const cartRef = doc(firestore, 'carts', user.uid);
         await updateDoc(cartRef, { items: arrayRemove(item) });
 
-        navigate('/checkout', { state: { item } });
+        // Pass the item and cart information to the Checkout page
+        navigate('/checkout', { state: { item, cartItems } });
       } catch (error) {
         console.error('Error handling buy now:', error);
       }

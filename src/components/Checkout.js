@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { firestore, auth } from '../firebase';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState, useEffect } from 'react';
+import { firestore, auth, doc, collection, addDoc, runTransaction ,getDoc} from '../firebase';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Checkout = () => {
   const [address, setAddress] = useState('');
@@ -8,8 +8,62 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [cartItems, setCartItems] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const checkAuthentication = () => {
+      const user = auth.currentUser;
+      if (user) {
+        setIsAuthenticated(true);
+        const state = location.state;
+        if (state && state.cartItems) {
+          setCartItems(state.cartItems);
+        } else {
+          fetchCartItems(user);
+        }
+      } else {
+        setIsAuthenticated(false);
+        navigate('/login');
+      }
+    };
+
+    checkAuthentication();
+
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      if (user) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        navigate('/login');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate, location]);
+
+  const fetchCartItems = async (user) => {
+    const cartRef = doc(firestore, 'carts', user.uid);
+    const cartSnapshot = await getDoc(cartRef);
+    if (cartSnapshot.exists()) {
+      setCartItems(cartSnapshot.data().items || []);
+    }
+  };
 
   const handleCheckout = async () => {
+    if (!isAuthenticated) {
+      setError('You must be logged in to place an order.');
+      return;
+    }
+
+    if (!address) {
+      setError('Please enter your delivery address.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -17,29 +71,32 @@ const Checkout = () => {
     const user = auth.currentUser;
     if (user) {
       try {
-        const cartSnapshot = await firestore.collection('carts').doc(user.uid).get();
-        const cartItems = cartSnapshot.data().items || [];
         const order = {
           userId: user.uid,
-          email: user.email, // Add user's email
+          email: user.email,
           deliveryAddress: address,
           paymentMethod,
           products: cartItems,
-          status: 'Pending'
+          status: 'Pending',
+          createdAt: new Date(),
         };
 
-        // Add order to 'orders' collection
-        await firestore.collection('orders').add(order);
-
-        // Clear the cart
-        await firestore.collection('carts').doc(user.uid).update({ items: [] });
+        await runTransaction(firestore, async (transaction) => {
+          const cartDoc = doc(firestore, 'carts', user.uid);
+          const cartSnapshot = await transaction.get(cartDoc);
+          if (!cartSnapshot.exists() || cartItems.length === 0) {
+            throw new Error('Your cart is empty!');
+          }
+          // Use Firestore's auto-generated ID for the order
+          await addDoc(collection(firestore, 'orders'), order);
+          await transaction.update(cartDoc, { items: [] });
+        });
 
         setSuccess('Order placed successfully!');
       } catch (error) {
+        console.error('Error placing order:', error);
         setError('An error occurred while placing the order.');
       }
-    } else {
-      setError('User not authenticated.');
     }
     setLoading(false);
   };
@@ -76,7 +133,7 @@ const Checkout = () => {
           type="button" 
           className="btn btn-primary" 
           onClick={handleCheckout}
-          disabled={loading}
+          disabled={loading || !isAuthenticated || !address}
         >
           {loading ? 'Placing Order...' : 'Place Order'}
         </button>

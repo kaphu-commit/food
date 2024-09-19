@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { auth } from '../firebase'; // Ensure you have the correct import for Firebase Auth
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const OrderCustomization = () => {
   const [customization, setCustomization] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [user, setUser] = useState(null); // State to hold user information
+
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setUser(currentUser); // Set the user state with the current authenticated user
+    }
+  }, []);
 
   const handleCustomizationChange = (e) => {
     setCustomization(e.target.value);
@@ -20,7 +29,7 @@ const OrderCustomization = () => {
     
     try {
       // Simulate sending data to a backend or a service
-      console.log('Submitting customization:', customization);
+      console.log('Submitting customization:', customization, 'from:', user ? user.email : 'Unknown User');
 
       // Simulate a successful submission
       setSubmitted(true);
@@ -49,7 +58,8 @@ const OrderCustomization = () => {
         </button>
         {submitted && (
           <div className="alert alert-success mt-3" role="alert">
-            Customization details submitted successfully!
+            Customization details submitted successfully! <br />
+            <strong>{user ? user.email : 'Unknown User'}</strong>: {customization}
           </div>
         )}
         {error && (
@@ -63,3 +73,4 @@ const OrderCustomization = () => {
 };
 
 export default OrderCustomization;
+ 
